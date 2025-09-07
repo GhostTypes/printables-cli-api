@@ -6,9 +6,15 @@ import argparse
 import time
 
 
-def search_models(search_term: str, limit: int = 5, debug: bool = False):
+def search_models(search_term: str, limit: int = 5, ordering: str = "best_match", debug: bool = False):
     """
     Searches Printables.com for models using the GraphQL API.
+    
+    Args:
+        search_term: The search query
+        limit: Maximum number of results to return
+        ordering: Search ordering - one of: "best_match", "popular", "latest", "rating", "makes_count"
+        debug: Enable debug output
     """
     api_url = "https://api.printables.com/graphql/"
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"}
@@ -27,11 +33,16 @@ def search_models(search_term: str, limit: int = 5, debug: bool = False):
         __typename 
     }
     """
-    variables = {"query": search_term, "limit": limit, "ordering": "best_match"}
+    # Validate ordering parameter
+    valid_orderings = ["best_match", "popular", "latest", "rating", "makes_count"]
+    if ordering not in valid_orderings:
+        raise ValueError(f"Invalid ordering '{ordering}'. Must be one of: {', '.join(valid_orderings)}")
+    
+    variables = {"query": search_term, "limit": limit, "ordering": ordering}
     payload = {"operationName": "SearchModels", "query": query, "variables": variables}
     
     if debug:
-        print(f"Searching for '{search_term}' (limit: {limit})...")
+        print(f"Searching for '{search_term}' (limit: {limit}, ordering: {ordering})...")
     try:
         response = requests.post(api_url, headers=headers, json=payload, timeout=15)
         response.raise_for_status()
@@ -228,10 +239,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Search Printables.com and fetch model data.")
     parser.add_argument("search_term", type=str, help="The term to search for.")
     parser.add_argument("-l", "--limit", type=int, default=5, help="Number of results to fetch (default: 5).")
+    parser.add_argument("-o", "--ordering", type=str, default="best_match", 
+                       choices=["best_match", "popular", "latest", "rating", "makes_count"],
+                       help="Search ordering (default: best_match).")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output for detailed logging.")
     args = parser.parse_args()
 
-    search_results = search_models(args.search_term, args.limit, args.debug)
+    search_results = search_models(args.search_term, args.limit, args.ordering, args.debug)
     
     if not search_results:
         print("No models found. Exiting.")

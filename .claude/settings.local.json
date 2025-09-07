@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Cope/Documents/AI-Projects/parallel-thinking-mcp-server/**)",
+      "mcp__context7__resolve-library-id",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
