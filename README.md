@@ -45,7 +45,9 @@
   <h2>Model Search</h2>
 </div>
 
+<p align="center">
 This tool allows for precise searching of the Printables.com model database directly from the command line.
+</p>
 
 <div align="center">
 <table>
@@ -70,7 +72,9 @@ This tool allows for precise searching of the Printables.com model database dire
   <h2>Detailed Data Retrieval</h2>
 </div>
 
+<p align="center">
 The script gathers comprehensive information for each model found, combining API data with web scraping.
+</p>
 
 <div align="center">
 <table>
@@ -103,7 +107,9 @@ The script gathers comprehensive information for each model found, combining API
   <h2>Download Link Generation</h2>
 </div>
 
+<p align="center">
 For each model, the script identifies all downloadable files and obtains direct access links.
+</p>
 
 <div align="center">
 <table>
@@ -128,7 +134,9 @@ For each model, the script identifies all downloadable files and obtains direct 
   <h2>JSON Data Export</h2>
 </div>
 
+<p align="center">
 All retrieved data is saved locally in a clean, machine-readable format.
+</p>
 
 <div align="center">
 <table>
@@ -153,12 +161,18 @@ All retrieved data is saved locally in a clean, machine-readable format.
   <h2>Getting Started</h2>
 </div>
 
+<p align="center">
 Follow these instructions to set up and run the project on your local machine.
+</p>
+
+<div align="center">
 
 ### Prerequisites
 
   - Python 3.8+
   - pip (Python package installer)
+
+</div>
 
 ---
 
