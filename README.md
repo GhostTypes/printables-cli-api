@@ -5,7 +5,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white">
-  <img src="https://img.shields.io/github/license/GhostTypes/printables-cli-api?style=for-the-badge">
   <img src="https://img.shields.io/github/stars/GhostTypes/printables-cli-api?style=for-the-badge">
 </p>
 
@@ -161,7 +160,11 @@ Follow these instructions to set up and run the project on your local machine.
   - Python 3.8+
   - pip (Python package installer)
 
-### Installation
+---
+
+<div align="center">
+  <h2>Installation</h2>
+</div>
 
 1.  Clone the repository (replace with your actual repository URL)
 
