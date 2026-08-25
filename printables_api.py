@@ -235,6 +235,87 @@ def get_model_description(model_url: str, debug: bool = False):
     
     return f"Error: Could not fetch model page after {max_retries} attempts due to network issues."
 
+
+def get_model_images(model_url: str, debug: bool = False):
+    """
+    Scrape the model page and return a list of image URLs (cover + gallery).
+    Attempts multiple strategies: <img> tags, inline background-image styles, and anchor hrefs.
+    """
+    if debug:
+        print(f"    -> Fetching images from: {model_url}")
+
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            scraper = cloudscraper.create_scraper(browser='chrome', delay=1,)
+            response = scraper.get(model_url, timeout=20)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+            imgs = set()
+
+            # 1) <img> tags (src, data-src, srcset)
+            for img in soup.find_all('img'):
+                src = img.get('data-src') or img.get('src') or ''
+                src = (src or '').strip()
+                if not src:
+                    # try srcset first item if present
+                    srcset = img.get('srcset')
+                    if srcset:
+                        src = srcset.split(',')[0].split(' ')[0].strip()
+                if not src:
+                    continue
+                if src.startswith('//'):
+                    src = 'https:' + src
+                elif src.startswith('/'):
+                    src = 'https://www.printables.com' + src
+                if src:
+                    imgs.add(src)
+
+            # 2) inline styles with background-image: url(...)
+            import re
+            for tag in soup.find_all(style=True):
+                style = tag.get('style', '')
+                urls = re.findall(r'url\(([^)]+)\)', style)
+                for u in urls:
+                    u = u.strip().strip('"\'')
+                    if u.startswith('//'):
+                        u = 'https:' + u
+                    elif u.startswith('/'):
+                        u = 'https://www.printables.com' + u
+                    if u:
+                        imgs.add(u)
+
+            # 3) anchor hrefs pointing to image files
+            for a in soup.find_all('a', href=True):
+                href = a['href'].strip()
+                if href.startswith('//'):
+                    href = 'https:' + href
+                elif href.startswith('/'):
+                    href = 'https://www.printables.com' + href
+                if re.search(r'\.(png|jpe?g|gif|webp)(\?|$)', href, flags=re.I):
+                    imgs.add(href)
+
+            # Normalize and filter obvious non-http values
+            final_imgs = [u for u in imgs if isinstance(u, str) and u.startswith('http')]
+            final_imgs = sorted(set(final_imgs))
+            if debug:
+                print(f"    -> Found {len(final_imgs)} image(s)")
+            return final_imgs
+
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            if debug:
+                print(f"    -> Attempt {attempt + 1}/{max_retries} failed fetching images: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2 * (attempt + 1))
+                continue
+        except Exception as e:
+            if debug:
+                print(f"    -> Unexpected error when scraping images: {e}")
+            return []
+
+    return []
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Search Printables.com and fetch model data.")
     parser.add_argument("search_term", type=str, help="The term to search for.")
@@ -265,17 +346,24 @@ if __name__ == "__main__":
         if args.debug:
             print(f"({i+1}/{len(search_results)}) Processing: {model.get('name')} ({model_url})")
         
+        # gather images (cover from API + gallery scraped from model page)
+        images = get_model_images(model_url, args.debug)
+
         main_image_url = None
         if (image_info := model.get('image')) and image_info.get('filePath'):
             main_image_url = "https://media.printables.com/" + image_info['filePath']
-            
+        # fall back to first scraped image if API cover not provided
+        if not main_image_url and images:
+            main_image_url = images[0]
+
         description = get_model_description(model_url, args.debug)
         files = get_model_files(model_id_str, args.debug)
-        
+
         all_models_data[model_id_str] = {
             "name": model.get('name'),
             "url": model_url,
             "main_image_url": main_image_url,
+            "image_urls": images,
             "author": model.get('user', {}).get('publicUsername'),
             "stats": {
                 "likes": model.get('likesCount'),
