@@ -207,3 +207,30 @@ Follow these instructions to set up and run the project on your local machine.
     # Advanced usage: search for "Benchy", limit to 3 results, and enable debug output
     python printables_api.py "Benchy" --limit 3 --debug
     ```
+
+---
+
+## What's new
+
+- Gallery image scraping: the script now scrapes all images from a model's page (cover + gallery) and includes them in the JSON output under the image_urls key. The API-provided cover image remains available as main_image_url; if the API cover is missing, the first scraped image is used as a fallback.
+
+- Example JSON keys added:
+
+```json
+"main_image_url": "https://media.printables.com/..",
+"image_urls": [
+  "https://media.printables.com/..",
+  "https://media.printables.com/.."
+]
+```
+
+These changes improve the richness of output and make it easier to download or preview all images associated with a model.
+
+---
+
+## Contributors
+
+- Jacob Robertson (https://github.com/JacRob32)
+
+If you'd like to add additional contributors, fork the repo and open a PR.
+
